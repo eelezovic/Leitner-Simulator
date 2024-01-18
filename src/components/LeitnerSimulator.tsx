@@ -1,21 +1,41 @@
-import React, { useState } from 'react';
-import './LeitnerSimulator.css'; 
+import React, { useState } from "react";
+import "./LeitnerSimulator.css";
 
 type Step = {
   interval: number;
-  action: 'easy' | 'good' | 'hard' | 'again';
+  action: "easy" | "good" | "hard" | "again";
 };
 
-function LeitnerSimulator() {
-  const [currentInterval, setCurrentInterval] = useState(1);
-  const [steps, setSteps] = useState<Step[]>([]);
-  
-  const [easyMultiplier, setEasyMultiplier] = useState(4.0); 
+type LeitnerSimulatorProps = {
+  easyLabel?: string;
+  goodLabel?: string;
+  hardLabel?: string;
+  againLabel?: string;
+  onEasyMultiplierChange?: (value: number) => void;
+  onGoodMultiplierChange?: (value: number) => void;
+  onHardMultiplierChange?: (value: number) => void;
+  onAgainMultiplierChange?: (value: number) => void;
+};
+
+function LeitnerSimulator({
+  easyLabel = "Easy",
+  goodLabel = "Good",
+  hardLabel = "Hard",
+  againLabel = "Again",
+  onEasyMultiplierChange,
+  onGoodMultiplierChange,
+  onHardMultiplierChange,
+  onAgainMultiplierChange,
+}: LeitnerSimulatorProps) {
+  const [currentIntervalDays, setCurrentIntervalDays] = useState(1);
+  const [reviewStepsHistory, setReviewStepsHistory] = useState<Step[]>([]);
+
+  const [easyMultiplier, setEasyMultiplier] = useState(4.0);
   const [goodMultiplier, setGoodMultiplier] = useState(1.8);
   const [hardMultiplier, setHardMultiplier] = useState(1.2);
   const [againMultiplier, setAgainMultiplier] = useState(0.5);
 
-  const handleAction = (action: 'easy' | 'good' | 'hard' | 'again') => {
+  const handleReviewAction = (action: "easy" | "good" | "hard" | "again") => {
     let newInterval;
     const multiplier = {
       easy: easyMultiplier,
@@ -23,110 +43,167 @@ function LeitnerSimulator() {
       hard: hardMultiplier,
       again: againMultiplier,
     }[action];
-  
-    if (steps.length === 0) {
-      newInterval = multiplier; 
+
+    if (reviewStepsHistory.length === 0) {
+      newInterval = multiplier;
     } else {
-      newInterval = currentInterval * multiplier;
+      newInterval = currentIntervalDays * multiplier;
     }
-  
-    setCurrentInterval(newInterval);
-    setSteps([...steps, { interval: newInterval, action }]);
-  
-    
+
+    setCurrentIntervalDays(newInterval);
+    setReviewStepsHistory([
+      ...reviewStepsHistory,
+      { interval: newInterval, action },
+    ]);
+
     setTimeout(() => {
-      const stepsContainer = document.querySelector('.steps');
+      const stepsContainer = document.querySelector(".steps");
       if (stepsContainer) {
         stepsContainer.scrollLeft = stepsContainer.scrollWidth;
       }
     }, 100);
   };
-  
-  
-  const handleReset = () => {
-    setCurrentInterval(1);
-    setSteps([]);
+
+  const resetReviewHistory = () => {
+    setCurrentIntervalDays(1);
+    setReviewStepsHistory([]);
   };
-  
+
+  const updateIntervalMultiplier = (
+    action: "easy" | "good" | "hard" | "again",
+    value: string
+  ) => {
+    const numericValue = value === "" ? 0 : Number(value);
+
+    const setMultiplierHandlers = {
+      easy: setEasyMultiplier,
+      good: setGoodMultiplier,
+      hard: setHardMultiplier,
+      again: setAgainMultiplier,
+    };
+    setMultiplierHandlers[action](numericValue);
+
+    const callbackHandlers = {
+      easy: onEasyMultiplierChange,
+      good: onGoodMultiplierChange,
+      hard: onHardMultiplierChange,
+      again: onAgainMultiplierChange,
+    };
+    callbackHandlers[action]?.(numericValue);
+  };
 
   return (
-    <div className="backdrop">
-    <div className="leitner-simulator">
-      <h1>Leitner System Simulator</h1>
-      <p>
-        In this section, you have the ability to modify the parameters that
-        determine the timing and manner of card reviews. These general settings
-        apply to all cards, though they can be individually adjusted for
-        specific decks or notes within the review settings.
-      </p>
+    <div className="backdropContainer">
+      <div className="leitnerSimulator">
+        <h1>Leitner System Simulator</h1>
+        <p>
+          In this section, you have the ability to modify the parameters that
+          determine the timing and manner of card reviews. These general
+          settings apply to all cards, though they can be individually adjusted
+          for specific decks or notes within the review settings.
+        </p>
 
-      <div className="multipliers">
-        <label>
-          Easy Multiplier:
-          <input
-            type="number"
-            value={easyMultiplier}
-            onChange={(e) => setEasyMultiplier(Number(e.target.value))}
-          />
-        </label>
-        <label>
-          Good Multiplier:
-          <input
-            type="number"
-            value={goodMultiplier}
-            onChange={(e) => setGoodMultiplier(Number(e.target.value))}
-          />
-        </label>
-        <label>
-          Hard Multiplier:
-          <input
-            type="number"
-            value={hardMultiplier}
-            onChange={(e) => setHardMultiplier(Number(e.target.value))}
-          />
-        </label>
-        <label>
-          Again Multiplier:
-          <input
-            type="number"
-            value={againMultiplier}
-            onChange={(e) => setAgainMultiplier(Number(e.target.value))}
-          />
-        </label>
-      </div>
+        <div className="intervalMultipliers">
+          <label>
+            Easy Multiplier:
+            <div className="inputContainer">
+              <input
+                type="number"
+                value={easyMultiplier || ""} // ..here I'm displaying an empty string if the value is 0
+                onChange={(e) =>
+                  updateIntervalMultiplier("easy", e.target.value)
+                }
+              />
 
-      <div className="steps-container">
-        <div className="steps">
-          {steps.length === 0 && (
-            <div className="step">
-              <div className="box">+</div>
-              <div className="arrow">&#8594;</div>
-              <div className="box"></div>
+              <span className="inputSymbol">x</span>
             </div>
-          )}
-          {steps.map((step, index) => (
-            <div key={index} className="step">
-              <div className="box">{index === 0 ? '+' : '✓'}</div>
-              <div className="arrow">
-                <span className="interval">{step.interval} days</span>
-                &#8594;
-              </div>
-              <div className="box"></div>
+          </label>
+
+          <label>
+            Good Multiplier:
+            <div className="inputContainer">
+              <input
+                type="number"
+                value={goodMultiplier || ""}
+                onChange={(e) =>
+                  updateIntervalMultiplier("good", e.target.value)
+                }
+              />
+              <span className="inputSymbol">x</span>
             </div>
-          ))}
+          </label>
+
+          <label>
+            Hard Multiplier:
+            <div className="inputContainer">
+              <input
+                type="number"
+                value={hardMultiplier || ""}
+                onChange={(e) =>
+                  updateIntervalMultiplier("hard", e.target.value)
+                }
+              />
+              <span className="inputSymbol">x</span>
+            </div>
+          </label>
+
+          <label>
+            Again Multiplier:
+            <div className="inputContainer">
+              <input
+                type="number"
+                value={againMultiplier || ""}
+                onChange={(e) =>
+                  updateIntervalMultiplier("again", e.target.value)
+                }
+              />
+              <span className="inputSymbol">x</span>
+            </div>
+          </label>
         </div>
-        <div className="action-buttons">
-        <button onClick={() => handleAction("easy")}>Easy</button>
-        <button onClick={() => handleAction("good")}>Good</button>
-        <button onClick={() => handleAction("hard")}>Hard</button>
-        <button onClick={() => handleAction("again")}>Again</button>
-        <button onClick={handleReset}>Reset</button>
+
+        <div className="stepsContainer">
+          <div className="reviewSteps">
+ 
+            <div className="step">
+              <div className="leitnerBox">+</div>
+              <div className="leitnerArrow">&#8594;</div>
+            </div>
+
+            {reviewStepsHistory.map((step, index) => (
+              <React.Fragment key={index}>
+                <div className="leitnerBox">{step.action}</div>
+                <div className="intervalLabel">{step.interval} days</div>
+                <div className="leitnerArrow">&#8594;</div>
+                {index < reviewStepsHistory.length - 1 && (
+                  <div className="intervalConnector"></div>
+                )}
+              </React.Fragment>
+            ))}
+
+            {reviewStepsHistory.length > 0 && (
+              <div className="leitnerBox emptyBox"></div>
+            )}
+          </div>
+          <div className="actionButtons">
+            <button onClick={() => handleReviewAction("easy")}>
+              {easyLabel}
+            </button>
+            <button onClick={() => handleReviewAction("good")}>
+              {goodLabel}
+            </button>
+            <button onClick={() => handleReviewAction("hard")}>
+              {hardLabel}
+            </button>
+            <button onClick={() => handleReviewAction("again")}>
+              {againLabel}
+            </button>
+            <button onClick={resetReviewHistory}>Reset</button>
+          </div>
+        </div>
       </div>
-      </div>
-    </div>
     </div>
   );
 }
 
 export default LeitnerSimulator;
-
