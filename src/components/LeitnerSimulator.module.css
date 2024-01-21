@@ -87,6 +87,18 @@
   color: #fff;
 }
 
+.actionButtons button:disabled {
+  background-color: #ebebeb;
+  color: #666;
+  cursor: not-allowed;
+}
+
+.actionButtons button:not(:disabled):hover {
+  background-color: rgb(23, 135, 255);
+  color: #fff;
+}
+
+
 .stepsContainer{
   display: block;
   justify-content: center;
@@ -168,6 +180,35 @@ input[type="number"] {
     min-width: 60px; 
     border: 1px dashed rgb(209, 209, 209); 
   }
+
+  .maxIntervalInputContainer input {
+    width: 100px; 
+    padding-right: 48px; 
+  }
+  
+  .maxIntervalInputContainer::after {
+    content: 'days';
+    position: absolute;
+    right: 10px; 
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: #777; 
+  }
+  
+
+  .leitnerBox {
+    position: relative;
+  }
+  
+  .halfMoonIcon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1em; 
+  }
+  
   
 @media (max-width: 768px) {
     .leitnerSimulator {

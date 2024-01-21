@@ -1,5 +1,7 @@
 import React, { useState } from "react";
-import "./LeitnerSimulator.css";
+import Styles from "./LeitnerSimulator.module.css";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faMoon } from "@fortawesome/free-solid-svg-icons";
 
 type Step = {
   interval: number;
@@ -15,6 +17,7 @@ type LeitnerSimulatorProps = {
   onGoodMultiplierChange?: (value: number) => void;
   onHardMultiplierChange?: (value: number) => void;
   onAgainMultiplierChange?: (value: number) => void;
+  onMaxIntervalMultiplierChange?: (value: number) => void;
 };
 
 function LeitnerSimulator({
@@ -26,6 +29,7 @@ function LeitnerSimulator({
   onGoodMultiplierChange,
   onHardMultiplierChange,
   onAgainMultiplierChange,
+  onMaxIntervalMultiplierChange,
 }: LeitnerSimulatorProps) {
   const [currentIntervalDays, setCurrentIntervalDays] = useState(1);
   const [reviewStepsHistory, setReviewStepsHistory] = useState<Step[]>([]);
@@ -34,9 +38,12 @@ function LeitnerSimulator({
   const [goodMultiplier, setGoodMultiplier] = useState(1.8);
   const [hardMultiplier, setHardMultiplier] = useState(1.2);
   const [againMultiplier, setAgainMultiplier] = useState(0.5);
+  const [maxIntervalMultiplier, setMaxIntervalMultiplier] = useState(365);
+  const [isMaxIntervalReached, setIsMaxIntervalReached] = useState(false);
 
   const handleReviewAction = (action: "easy" | "good" | "hard" | "again") => {
-    let newInterval;
+    if (isMaxIntervalReached) return;
+
     const multiplier = {
       easy: easyMultiplier,
       good: goodMultiplier,
@@ -44,10 +51,14 @@ function LeitnerSimulator({
       again: againMultiplier,
     }[action];
 
+    let newInterval = currentIntervalDays * multiplier;
     if (reviewStepsHistory.length === 0) {
       newInterval = multiplier;
-    } else {
-      newInterval = currentIntervalDays * multiplier;
+    }
+
+    if (newInterval >= maxIntervalMultiplier) {
+      newInterval = maxIntervalMultiplier;
+      setIsMaxIntervalReached(true);
     }
 
     setCurrentIntervalDays(newInterval);
@@ -67,6 +78,7 @@ function LeitnerSimulator({
   const resetReviewHistory = () => {
     setCurrentIntervalDays(1);
     setReviewStepsHistory([]);
+    setIsMaxIntervalReached(false);
   };
 
   const updateIntervalMultiplier = (
@@ -92,9 +104,15 @@ function LeitnerSimulator({
     callbackHandlers[action]?.(numericValue);
   };
 
+  const updateMaxIntervalMultiplier = (value: string) => {
+    const numericValue = value === "" ? 0 : Number(value);
+    setMaxIntervalMultiplier(numericValue);
+    onMaxIntervalMultiplierChange?.(numericValue);
+  };
+
   return (
-    <div className="backdropContainer">
-      <div className="leitnerSimulator">
+    <div className={Styles.backdropContainer}>
+      <div className={Styles.leitnerSimulator}>
         <h1>Leitner System Simulator</h1>
         <p>
           In this section, you have the ability to modify the parameters that
@@ -103,25 +121,25 @@ function LeitnerSimulator({
           for specific decks or notes within the review settings.
         </p>
 
-        <div className="intervalMultipliers">
+        <div className={Styles.intervalMultipliers}>
           <label>
             Easy Multiplier:
-            <div className="inputContainer">
+            <div className={Styles.inputContainer}>
               <input
                 type="number"
-                value={easyMultiplier || ""} // ..here I'm displaying an empty string if the value is 0
+                value={easyMultiplier || ""}
                 onChange={(e) =>
                   updateIntervalMultiplier("easy", e.target.value)
                 }
               />
 
-              <span className="inputSymbol">x</span>
+              <span className={Styles.inputSymbol}>x</span>
             </div>
           </label>
 
           <label>
             Good Multiplier:
-            <div className="inputContainer">
+            <div className={Styles.inputContainer}>
               <input
                 type="number"
                 value={goodMultiplier || ""}
@@ -129,13 +147,13 @@ function LeitnerSimulator({
                   updateIntervalMultiplier("good", e.target.value)
                 }
               />
-              <span className="inputSymbol">x</span>
+              <span className={Styles.inputSymbol}>x</span>
             </div>
           </label>
 
           <label>
             Hard Multiplier:
-            <div className="inputContainer">
+            <div className={Styles.inputContainer}>
               <input
                 type="number"
                 value={hardMultiplier || ""}
@@ -143,13 +161,13 @@ function LeitnerSimulator({
                   updateIntervalMultiplier("hard", e.target.value)
                 }
               />
-              <span className="inputSymbol">x</span>
+              <span className={Styles.inputSymbol}>x</span>
             </div>
           </label>
 
           <label>
             Again Multiplier:
-            <div className="inputContainer">
+            <div className={Styles.inputContainer}>
               <input
                 type="number"
                 value={againMultiplier || ""}
@@ -157,45 +175,77 @@ function LeitnerSimulator({
                   updateIntervalMultiplier("again", e.target.value)
                 }
               />
-              <span className="inputSymbol">x</span>
+              <span className={Styles.inputSymbol}>x</span>
+            </div>
+          </label>
+          <label>
+            Max Interval:
+            <div
+              className={`${Styles.inputContainer} ${Styles.maxIntervalInputContainer}`}
+            >
+              <input
+                type="number"
+                value={maxIntervalMultiplier || ""}
+                onChange={(e) => updateMaxIntervalMultiplier(e.target.value)}
+              />
             </div>
           </label>
         </div>
 
-        <div className="stepsContainer">
-          <div className="reviewSteps">
- 
-            <div className="step">
-              <div className="leitnerBox">+</div>
-              <div className="leitnerArrow">&#8594;</div>
+        <div className={Styles.stepsContainer}>
+          <div className={Styles.reviewSteps}>
+            <div className={Styles.step}>
+              <div className={Styles.leitnerBox}>+</div>
+              <div className={Styles.leitnerArrow}>&#8594;</div>
             </div>
 
             {reviewStepsHistory.map((step, index) => (
               <React.Fragment key={index}>
-                <div className="leitnerBox">{step.action}</div>
-                <div className="intervalLabel">{step.interval} days</div>
-                <div className="leitnerArrow">&#8594;</div>
+                <div className={Styles.leitnerBox}>{step.action}</div>
+                <div className={Styles.intervalLabel}>{step.interval} days</div>
+                <div className={Styles.leitnerArrow}>&#8594;</div>
                 {index < reviewStepsHistory.length - 1 && (
-                  <div className="intervalConnector"></div>
+                  <div className={Styles.intervalConnector}></div>
                 )}
               </React.Fragment>
             ))}
 
-            {reviewStepsHistory.length > 0 && (
-              <div className="leitnerBox emptyBox"></div>
+            {isMaxIntervalReached && (
+              <div className={Styles.leitnerBox}>
+                <FontAwesomeIcon
+                  icon={faMoon}
+                  className={Styles.halfMoonIcon}
+                />
+              </div>
+            )}
+
+            {!isMaxIntervalReached && reviewStepsHistory.length > 0 && (
+              <div className={`${Styles.leitnerBox} ${Styles.emptyBox}`}></div>
             )}
           </div>
-          <div className="actionButtons">
-            <button onClick={() => handleReviewAction("easy")}>
+          <div className={Styles.actionButtons}>
+            <button
+              onClick={() => handleReviewAction("easy")}
+              disabled={isMaxIntervalReached}
+            >
               {easyLabel}
             </button>
-            <button onClick={() => handleReviewAction("good")}>
+            <button
+              onClick={() => handleReviewAction("good")}
+              disabled={isMaxIntervalReached}
+            >
               {goodLabel}
             </button>
-            <button onClick={() => handleReviewAction("hard")}>
+            <button
+              onClick={() => handleReviewAction("hard")}
+              disabled={isMaxIntervalReached}
+            >
               {hardLabel}
             </button>
-            <button onClick={() => handleReviewAction("again")}>
+            <button
+              onClick={() => handleReviewAction("again")}
+              disabled={isMaxIntervalReached}
+            >
               {againLabel}
             </button>
             <button onClick={resetReviewHistory}>Reset</button>
