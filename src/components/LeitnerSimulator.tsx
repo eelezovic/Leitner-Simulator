@@ -8,7 +8,7 @@ type Step = {
   action: "easy" | "good" | "hard" | "again";
 };
 
-type LeitnerSimulatorProps = {
+export type LeitnerSimulatorProps = {
   easyLabel?: string;
   goodLabel?: string;
   hardLabel?: string;
