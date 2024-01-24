@@ -1,6 +1,9 @@
 import LeitnerSimulator from "./components/LeitnerSimulator";
 
+
 function App() {
+
+  
   return (
     <>
       <LeitnerSimulator />
