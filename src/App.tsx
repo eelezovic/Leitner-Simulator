@@ -1,4 +1,5 @@
-import LeitnerSimulator from "./components/LeitnerSimulator";
+
+import SearchableTable from "./components/SearchableTable"
 
 
 function App() {
@@ -6,7 +7,8 @@ function App() {
   
   return (
     <>
-      <LeitnerSimulator />
+      <SearchableTable />
+
     </>
   );
 }

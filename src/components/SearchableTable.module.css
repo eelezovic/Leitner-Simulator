@@ -1,0 +1,96 @@
+.tableContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin: 20px;
+  font-family: "Arial", sans-serif;
+}
+
+.searchInput {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 10px;
+
+  margin-bottom: 16px;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: px;
+  width: 30%;
+  box-sizing: border-box;
+}
+
+.searchableTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 16px;
+}
+
+.tableContainer .searchableTable tbody tr.selectedRow {
+  background-color: #d0e0f0;
+}
+
+.searchableTable th {
+  background-color: #f8f8f8;
+  color: #333;
+  font-weight: bold;
+  text-align: left;
+  padding: 8px;
+  border-bottom: 2px solid #ddd;
+}
+
+.searchableTable td {
+  padding: 8px;
+  border-bottom: 1px solid #ddd;
+}
+
+.searchableTable tr:hover {
+  background-color: #f2f2f2;
+}
+
+.newRow {
+  font-weight: bold;
+  background-color: #e8f4ff;
+}
+
+.paginationContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 8px;
+}
+
+.paginationButton {
+  padding: 8px 16px;
+  margin: 0 4px;
+  background-color: white;
+  border: 1px solid #ddd;
+  cursor: pointer;
+}
+
+.paginationButton:hover:not([disabled]) {
+  background-color: #f0f0f0;
+}
+
+.paginationButton:disabled {
+  color: #aaa;
+  cursor: default;
+}
+
+.activePage {
+  background-color: #0056b3;
+  color: white;
+  border-color: #004494;
+}
+
+.selectedRow {
+  background-color: #d0e0f0;
+}
+
+@media screen and (max-width: 600px) {
+  .paginationButton {
+    padding: 8px;
+    font-size: 0.8rem;
+  }
+}
