@@ -1,20 +1,20 @@
+// SearchableTable.tsx
 import React, { useState, useEffect } from "react";
 import styles from "./SearchableTable.module.css";
 import useSearch from "./useSearch";
 import TablePagination from "./TablePagination";
 
-type CardType = {
+export type CardType = {
   id: number;
   title: string;
   description: string;
   isNew?: boolean;
 };
 
-type ColumnType = {
+export type ColumnType = {
   field: keyof CardType;
   headerName: string;
 };
-
 const mockData: CardType[] = [
     {
       id: 1,
@@ -90,26 +90,33 @@ const mockData: CardType[] = [
     },
 
   ];
-  
 
-const mockColumns: ColumnType[] = [
-  { field: "title", headerName: "CARD" },
-  { field: "description", headerName: "DESCRIPTION" },
-];
+  const mockColumns: ColumnType[] = [
+    { field: "title", headerName: "CARD" },
+    { field: "description", headerName: "DESCRIPTION" },
+  ];
 
-function SearchableTable() {
-  const [data, setData] = useState(mockData);
+// props type for SearchableTable!
+type SearchableTableProps = {
+  initialData?: CardType[]; 
+  initialQuery?: string; 
+  initialItemsPerPage?: number; 
+};
+
+
+function SearchableTable({
+  initialData = mockData, 
+  initialItemsPerPage = 10,
+}: SearchableTableProps) {
+  const [data, setData] = useState<CardType[]>(initialData);
   const [currentPage, setCurrentPage] = useState(1);
   const searchKeys: (keyof CardType)[] = ["title", "description"];
   const { query, setQuery, filteredData } = useSearch({ data, searchKeys });
   const [selectedRowId, setSelectedRowId] = useState<number | null>(null);
 
-  const itemsPerPage = 10;
+  const itemsPerPage = initialItemsPerPage;
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedData = filteredData.slice(
-    startIndex,
-    startIndex + itemsPerPage
-  );
+  const paginatedData = filteredData.slice(startIndex, startIndex + itemsPerPage);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -119,13 +126,13 @@ function SearchableTable() {
     setSelectedRowId(rowId);
   };
 
-  // Handling click inside the table!
+
   const handleTableClick = () => {
     const updatedData = data.map((item) => ({ ...item, isNew: false }));
     setData(updatedData);
   };
 
-  // this handles click outside the table..
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (!event.target) return;
@@ -184,3 +191,4 @@ function SearchableTable() {
 }
 
 export default SearchableTable;
+
